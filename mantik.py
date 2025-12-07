@@ -1,0 +1,1 @@
+print("Mantık hazir")
