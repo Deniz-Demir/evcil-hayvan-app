@@ -1,0 +1,1 @@
+print("Arayuz hazir") yazın.
