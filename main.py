@@ -1,0 +1,1 @@
+print("Uygulama basliyor")
