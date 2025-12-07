@@ -1,0 +1,1 @@
+print("Veritabani fonksiyonlari hazir")
