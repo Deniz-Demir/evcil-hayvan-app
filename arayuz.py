@@ -27,7 +27,7 @@ evcil_hayvanlar = [
 
 def hayvan_detay_sayfasi(hayvan):
     print("\n**************")
-    print(f" 🐾 {hayvan['isim'].upper()} - DETAY SAYFASI 🐾")
+    print(f"{hayvan['isim'].upper()} - DETAY SAYFASI ")
     print("**************")
   
     print("\n--- TEMEL BİLGİLER ---")
