@@ -1,29 +1,24 @@
+from veri_islemleri import veritabani_kur, hayvan_ekle, hayvanlari_ekle, hayvanlari_göster
+
 kullanicilar = {
     "admin": "12345", 
     "deneme": "sifre"
 }
-evcil_hayvanlar = [
-    {
-        "sahip": "admin", 
-        "isim": "Karabas", 
-        "cins": "Kedi", 
-        "yas": 3, 
-        "kilo": 5.2,
-        "ozel_not": "Yaş mamayı sever.",
-        "asi_takvimi": [{"ad": "Karma Aşı", "tarih": "01.03.2024", "yapildi": True}],
-        "gecmis_veriler": [{"tarih": "15.10.2024", "kilo": 5.0, "durum": "Rutin kontrol."}]
-    },
-    {
-        "sahip": "deneme", 
-        "isim": "Fındık", 
-        "cins": "Köpek", 
-        "yas": 1, 
-        "kilo": 8.5,
-        "ozel_not": "Top oynamayı çok sever.",
-        "asi_takvimi": [{"ad": "Kuduz Aşısı", "tarih": "15.01.2025", "yapildi": False}],
-        "gecmis_veriler": []
-    },
-] 
+evcil_hayvanlar = [] 
+def verileri_senkronize_et()
+    global evcil_hayvanlar
+    evcil_haycanlar = []
+    gelen_veriler = hayvanlari_göster()
+
+    for h in gelen_veriler:
+        yeni = {
+            "id": h[0], "isim": h[1], "yas": h[2], "kilo": h[3],
+            "cins": "Belirtilmedi", "ozel_not": "Yok",
+            "asi_takvimi": [], "gecmis_veriler": []
+        }
+        evcil_hayvanlar.append(yeni)
+
+
 
 def hayvan_detay_sayfasi(hayvan):
     print("\n**************")
@@ -51,11 +46,10 @@ def hayvan_detay_sayfasi(hayvan):
         
     input("\nDevam etmek için ENTER tuşuna basın...")
 
-
 def hayvanlari_goruntule(sahip_adi):
-    kullaniciya_ait_hayvanlar = [h for h in evcil_hayvanlar if h["sahip"] == sahip_adi]
+    verileri_senkronize_et()
     
-    if not kullaniciya_ait_hayvanlar:
+    if not evcil_hayvanlar:
         print("\nKayıtlı evcil hayvanınız bulunmamaktadır.")
         return
 
@@ -63,45 +57,35 @@ def hayvanlari_goruntule(sahip_adi):
         print("\n==================================")
         print("EVCİL HAYVAN LİSTESİ")
         print("\n==================================")
+        for i, hayvan in enumerate(evcil_hayvanlar):
+            print(f"{i+1}. {hayvan['isim']} (Yaş: {hayvan['yas']} yıl)")
         
-      
-        for i, hayvan in enumerate(kullaniciya_ait_hayvanlar):
-            print(f"{i+1}. {hayvan['isim']} (Cins: {hayvan['cins']}, Yaş: {hayvan['yas']} yıl)")
-        
-        secim = input("\nDetay numarasını girin (Geri dönmek için '0'): ")
-        
-        if secim == '0':
-            return 
+        secim = input("\nDetay numarası (Geri için '0'): ")
+        if secim == '0': return 
         
         try:
             secilen_index = int(secim) - 1
-            if 0 <= secilen_index < len(kullaniciya_ait_hayvanlar):
-                hayvan_detay_sayfasi(kullaniciya_ait_hayvanlar[secilen_index])
-            else:
-                print(" Hata: Geçersiz sıra numarası.")
+            if 0 <= secilen_index < len(evcil_hayvanlar):
+                hayvan_detay_sayfasi(evcil_hayvanlar[secilen_index])
         except ValueError:
-            print(" Hata: Lütfen geçerli bir numara girin.")
+            print("Hata: Geçersiz numara.")
 
 def hayvan_kayit_formu(sahip_adi):
-     print("\n--- YENİ EVCİL HAYVAN KAYIT FORMU ---")
-    
-while True:
-        try:
-            isim = input("Hayvanın Adı: ")
-            cins = input("Hayvanın Cinsi: ")
-            yas = int(input("Yaşı (yıl): "))
-            kilo = float(input("Kilosu (kg): "))
+    print("\n--- YENİ EVCİL HAYVAN KAYIT FORMU ---")
+    try:
+        isim = input("Hayvanın Adı: ")
+        cins = input("Hayvanın Cinsi: ")
+        yas = int(input("Yaşı (yıl): "))
+        kilo = float(input("Kilosu (kg): "))
+        notu = input("Özel Not: ")
 
-            yeni_hayvan = {
-                "sahip":isim, "isim": isim, "cins": cins, "yas": yas, "kilo": kilo,
-                "ozel_not": input("Özel Notlar (Opsiyonel): "),
-                "asi_takvimi": [], "gecmis_veriler": []
-            }
-            evcil_hayvanlar.append(yeni_hayvan)
-            print(f"\n {isim} başarıyla kaydedildi!")
-            break
-        except ValueError:
-            print("Hata: Yaş ve kilo alanlarına sadece sayı girmelisiniz.")
+        hayvan_ekle(isim, yas, kilo, cins, "Yok", "Yok", "Yok", "Yok", "Yok", "Yok", notu, "Yok")
+        
+        verileri_senkronize_et()
+        print(f"\n {isim} başarıyla kaydedildi!")
+    except ValueError:
+        print("Hata: Sayı girmelisiniz.")
+
 
 def ana_sayfa(kullanici_adi):
     print(f"\n** HOŞ GELDİNİZ, {kullanici_adi.upper()}! **")
@@ -148,30 +132,14 @@ def giris_yap():
     else:
         print("\n Hatalı giriş bilgileri.")
 
-
 def ana_menu():
+    veritabani_kur() 
     while True:
-        print("\n==============================")
-        print(" EVCİL HAYVAN UYGULAMASI MENÜSÜ")
-        print("==============================")
-        print("1. Giriş Yap")
-        print("2. Kaydol")
-        print("3. Çıkış")
-        
-        ana_secim = input("Seçiminizi yapın (1-3): ")
-       
-        if ana_secim == '1':
-            giris_yap()
-        elif ana_secim == '2':
-            kayit_ol()
-        elif ana_secim == '3':
-            print("Uygulamadan çıkılıyor. İyi günler!")
-            break
-        else:
-            print("Hatalı seçim!")
+        print("\n1. Giriş Yap\n2. Kaydol\n3. Çıkış")
+        secim = input("Seçim: ")
+        if secim == '1': giris_yap()
+        elif secim == '2': kayit_ol()
+        elif secim == '3': break
 
-if __name__== "_main_":
+if __name__ == "__main__":
     ana_menu()
-
-
-
