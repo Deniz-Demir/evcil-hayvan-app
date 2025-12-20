@@ -177,6 +177,5 @@ tk.Button(pencere, text="Not Ekle", command=not_ekle).pack(pady=5)
 
 liste_kutusu = tk.Listbox(pencere, width=50, height=12)
 liste_kutusu.pack(pady=10)
-
 #uygulamaıcın
 pencere.mainloop()
