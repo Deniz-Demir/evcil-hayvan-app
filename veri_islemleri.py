@@ -85,9 +85,9 @@ def hayvanlari_goster():
 def hayvan_sil(numara):
     baglanti = sqlite3.connect(DOSYA)
     yazici = baglanti.cursor()
-
-    # Verilen ID numarasına göre silme yap
-    yazici.execute("DELETE FROM hayvanlar WHERE id = ?", (numara,))
+    
+    # Gelen numarayı sayıya çevirerek işimizi garantiye alıyoruz
+    yazici.execute("DELETE FROM hayvanlar WHERE id = ?", (int(numara),))
 
     baglanti.commit()
     baglanti.close()
