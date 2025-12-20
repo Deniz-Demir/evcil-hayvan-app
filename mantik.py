@@ -1,1 +1,1 @@
-print("Mantık hazir")
+
