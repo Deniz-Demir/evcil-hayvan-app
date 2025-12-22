@@ -1,83 +1,145 @@
-# Safiye'nin Bölümü: Öneri, Hatırlatma ve Akıllı Analiz Sistemi
 import tkinter as tk
-from veri_islemleri import veritabani_kur, hayvan_ekle, hayvan_detay_getir
+from tkinter import messagebox
+from veri_islemleri import veritabani_kur, hayvan_detay_getir
 
-# 1. AKILLI ANALİZ VE MAMA MOTORU
 def hayvana_ozel_cozum(hayvan_id):
-    """Deniz'in veritabanından bilgileri alır ve Safiye'nin mantığıyla analiz eder."""
     detay = hayvan_detay_getir(hayvan_id)
     if not detay:
-        return "Hayvan bilgisi bulunamadı."
+        return "❌ Hayvan bilgisi bulunamadı."
 
-    # Deniz'in yeni tablosuna göre indexler: kilo=3, boy=4, mama_tur=7, alerji=10, parazit=13
+    # Deniz'in tablosuna göre alanlar
     ad = detay[1]
+    yas = detay[2]
     kilo = detay[3]
     boy = detay[4]
+    mama_tur = detay[7]
     alerji = detay[10]
+    parazit = detay[13]
+
+    rapor = f"🐾 {ad.upper()} İÇİN AKILLI ANALİZ RAPORU\n"
+    rapor += "-" * 45 + "\n"
+
+    puan = 100  # Genel sağlık puanı
     
-    cozum = f"--- {ad.upper()} İÇİN ANALİZ RAPORU ---\n"
-    
-    # Kilo/Boy Endeksi Analizi (İlerlemesi gereken yol)
+    # KİLO / BOY ANALİZİ
     if boy > 0:
         endeks = kilo / boy
+        rapor += f"📏 Kilo/Boy Endeksi: {endeks:.2f}\n"
+
         if endeks > 0.5:
-            cozum += "- DURUM: Kilolu. Hareket artırılmalı.\n- YOL HARİTASI: Günlük yürüyüş süresini 15 dk artırın.\n"
+            rapor += "⚠️ DURUM: Kilolu\n"
+            rapor += "➡️ ÖNERİ: Günlük aktivite +15 dk artırılmalı\n"
+            puan -= 15
         elif endeks < 0.2:
-            cozum += "- DURUM: Zayıf. Besin değeri yüksek mamaya geçilmeli.\n"
+            rapor += "⚠️ DURUM: Zayıf\n"
+            rapor += "➡️ ÖNERİ: Protein oranı yüksek mama\n"
+            puan -= 20
         else:
-            cozum += "- DURUM: İdeal kiloda. Mevcut düzen korunmalı.\n"
-    
-    # Alerji ve Mama Durumu
-    if str(alerji).lower() != "yok":
-        cozum += f"- UYARI: {alerji} alerjisi var! Hiporalerjenik mama zorunludur.\n"
+            rapor += "✅ DURUM: İdeal kilo\n"
     else:
-        cozum += "- BESLENME: Alerji saptanmadı, standart mama kullanılabilir.\n"
+        rapor += "❗ Boy bilgisi eksik\n"
+        puan -= 10
+        
+    # ALERJİ KONTROLÜ
+    if str(alerji).lower() != "yok":
+        rapor += f"\n🚨 ALERJİ: {alerji}\n"
+        rapor += "➡️ Hiporalerjenik mama zorunlu\n"
+        puan -= 25
+    else:
+        rapor += "\n✅ Alerji tespit edilmedi\n"
+        
+    # PARAZİT DURUMU
+    if str(parazit).lower() != "yok":
+        rapor += f"\n🦠 PARAZİT UYARISI: {parazit}\n"
+        rapor += "➡️ Acil veteriner kontrolü önerilir\n"
+        puan -= 30
+    else:
+        rapor += "\n✅ Parazit bulgusu yok\n"
+        
+    # MAMA DEĞERLENDİRMESİ
+    rapor += f"\n🍽️ Mevcut Mama Türü: {mama_tur}\n"
+    rapor += "➡️ Mama seçimi yaş ve kiloya göre kontrol edildi\n"
 
-    # Veteriner Tavsiyesi (Ali Hekim Bey eklendi)
-    cozum += "- ÖNERİ: Genel kontrol için Ali Hekim Bey'e görünebilirsiniz.\n"
+    # GENEL SAĞLIK PUANI
     
-    return cozum
+    rapor += "\n📊 GENEL SAĞLIK PUANI: " + str(max(puan, 0)) + "/100\n"
 
-# 2. ARAYÜZ (TKINTER) - Safiye'nin Paneli
+    if puan >= 80:
+        rapor += "🟢 Genel durum çok iyi\n"
+    elif puan >= 50:
+        rapor += "🟡 Takip edilmeli\n"
+    else:
+        rapor += "🔴 Riskli – Veteriner önerilir\n"
+        
+    # VETERİNER ÖNERİSİ
+    rapor += "\n👨‍⚕️ ÖNERİLEN VETERİNER: Ali Hekim Bey\n"
+    return rapor
+
+
+
+# 2. TKINTER ARAYÜZÜ (DETAYLANDIRILDI)
 def pencereyi_ac():
     pencere = tk.Tk()
-    pencere.title("Safiye - Karar Destek ve Randevu Sistemi")
-    pencere.geometry("500x600")
+    pencere.title("Safiye | Akıllı Hayvan Takip Sistemi")
+    pencere.geometry("550x700")
 
-    # Başlık
-    tk.Label(pencere, text="EVCİL HAYVAN ÇÖZÜM MERKEZİ", font=("Arial", 14, "bold")).pack(pady=10)
+    tk.Label(pencere, text="🐶 EVCİL HAYVAN ÇÖZÜM MERKEZİ",
+             font=("Arial", 14, "bold")).pack(pady=10)
 
-    # Öneri ve Çözüm Ekranı
-    tk.Label(pencere, text="Hayvan Analizi ve Tavsiyeler:").pack()
-    cozum_alani = tk.Text(pencere, height=10, width=50)
-    cozum_alani.pack(pady=5)
+    # HAYVAN SEÇİMİ
+    tk.Label(pencere, text="Hayvan ID Giriniz:").pack()
+    hayvan_id_entry = tk.Entry(pencere, width=10)
+    hayvan_id_entry.pack(pady=5)
+    
+    # ANALİZ ALANI
+    cozum_alani = tk.Text(pencere, height=18, width=65)
+    cozum_alani.pack(pady=10)
 
     def analizi_goster():
-        # Test için 1 numaralı hayvanı analiz et (Deniz'in db'sindeki ilk kayıt)
-        rapor = hayvana_ozel_cozum(1)
-        cozum_alani.delete('1.0', tk.END)
-        cozum_alani.insert(tk.END, rapor)
+        try:
+            hayvan_id = int(hayvan_id_entry.get())
+            rapor = hayvana_ozel_cozum(hayvan_id)
+            cozum_alani.delete("1.0", tk.END)
+            cozum_alani.insert(tk.END, rapor)
+        except ValueError:
+            messagebox.showerror("Hata", "Lütfen geçerli bir ID girin")
 
-    tk.Button(pencere, text="Seçili Hayvanı Analiz Et", command=analizi_goster, bg="lightgreen").pack(pady=5)
+    tk.Button(
+        pencere,
+        text="🔍 Hayvanı Analiz Et",
+        command=analizi_goster,
+        bg="lightgreen"
+    ).pack(pady=5)
+    
+    # HATIRLATICI SİSTEMİ
 
-    # Hatırlatıcı Bölümü
-    tk.Label(pencere, text="Hatırlatıcı (Örn: Sabah 08:00 Mama)").pack(pady=5)
+    tk.Label(pencere, text="⏰ Hatırlatıcı (Örn: 08:00 Mama)").pack()
     hatirlatma_entry = tk.Entry(pencere, width=40)
     hatirlatma_entry.pack()
-    
-    def hatirlatma_ekle():
-        liste_kutusu.insert(tk.END, f"⏰ {hatirlatma_entry.get()}")
-        hatirlatma_entry.delete(0, tk.END)
 
-    tk.Button(pencere, text="Hatırlatıcı Ekle", command=hatirlatma_ekle).pack(pady=5)
-
-    # Veteriner Listesi
-    tk.Label(pencere, text="Kayıtlı Veterinerlerimiz:").pack(pady=5)
-    vets = "1. Ali Hekim Bey (Cerrahi) \n2. Veli Bey (Aşı Uzmanı)"
-    tk.Label(pencere, text=vets, fg="blue").pack()
-
-    liste_kutusu = tk.Listbox(pencere, width=50, height=8)
+    liste_kutusu = tk.Listbox(pencere, width=55, height=8)
     liste_kutusu.pack(pady=10)
+
+    def hatirlatma_ekle():
+        if hatirlatma_entry.get():
+            liste_kutusu.insert(tk.END, f"⏰ {hatirlatma_entry.get()}")
+            hatirlatma_entry.delete(0, tk.END)
+        else:
+            messagebox.showwarning("Uyarı", "Hatırlatma boş olamaz")
+
+    tk.Button(pencere, text="➕ Hatırlatıcı Ekle",
+              command=hatirlatma_ekle).pack(pady=5)
+
+    # VETERİNER BİLGİSİ
+  
+    tk.Label(pencere, text="👨‍⚕️ Kayıtlı Veterinerler",
+             font=("Arial", 10, "bold")).pack(pady=5)
+
+    vets = (
+        "1️⃣ Ali Hekim Bey – Genel & Cerrahi\n"
+        "2️⃣ Veli Bey – Aşı ve Koruyucu Sağlık"
+    )
+    tk.Label(pencere, text=vets, fg="blue").pack()
 
     pencere.mainloop()
 
