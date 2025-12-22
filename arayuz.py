@@ -1,7 +1,6 @@
 from veri_islemleri import veritabani_kur, hayvan_ekle, hayvanlari_goster, hayvan_detay_getir
 from safiye import hayvana_ozel_cozum
 
-# Kullanıcı veritabanı
 kullanicilar = {
     "admin": "12_345", 
     "deneme": "sifre"
@@ -9,7 +8,6 @@ kullanicilar = {
 evcil_hayvanlar = [] 
 
 def verileri_senkronize_et():
-    """Deniz'in güncel veritabanından (id, ad, yas, kilo, mama_turu) bilgileri çeker."""
     global evcil_hayvanlar
     try:
         gelen_veriler = hayvanlari_goster() 
@@ -26,18 +24,16 @@ def verileri_senkronize_et():
         print(f"Veri senkronizasyon hatası: {e}")
 
 def hayvan_detay_sayfasi(hayvan_id):
-    """Safiye'nin analiz motorunu ve Deniz'in tüm detaylarını birleştirir."""
     detay = hayvan_detay_getir(hayvan_id)
     if detay:
         print("\n" + "="*40)
-        print(f"🐾 {str(detay[1]).upper()} - BİLGİ VE ANALİZ EKRANI 🐾")
+        print(f" {str(detay[1]).upper()} - BİLGİ VE ANALİZ EKRANI ")
         print("="*40)
         print(f"Adı: {detay[1]} | Cinsi: {detay[5]} | Yaşı: {detay[2]}")
         print(f"Boy: {detay[4]} cm | Kilo: {detay[3]} kg")
         print(f"Mama Saati: {detay[9]} | Miktarı: {detay[8]}")
         print("-" * 40)
         
-        # Safiye'nin 'Çözüm Açıklayan' fonksiyonunu buraya bağladık
         rapor = hayvana_ozel_cozum(hayvan_id)
         print(rapor)
         
@@ -68,7 +64,7 @@ def hayvanlari_goruntule():
             print("Lütfen sayı girin.")
 
 def hayvan_kayit_formu():
-    print("\n--- 📝 YENİ HAYVAN KAYIT FORMU ---")
+    print("\n--- YENİ HAYVAN KAYIT FORMU ---")
     try:
         ad = input("Adı: ")
         yas = int(input("Yaşı: "))
@@ -80,7 +76,6 @@ def hayvan_kayit_formu():
         saat = input("Mama Saatleri: ")
         alerji = input("Alerji Durumu (Yoksa 'Yok'): ")
         
-        # Deniz'in 14 parametreli yeni fonksiyonuna gönderiyoruz
         hayvan_ekle(ad, yas, kilo, boy, "Belirtilmedi", "Marka", mama_tur, miktar, saat, alerji, "Yok", "Ali Hekim Bey", "Kuduz", "Normal")
         
         print(f"\n[+] {ad} başarıyla sisteme eklendi!")
@@ -89,7 +84,7 @@ def hayvan_kayit_formu():
 
 def ana_sayfa(kullanici_adi):
     while True:
-        print(f"\n--- 🏠 ANA SAYFA ({kullanici_adi.upper()}) ---")
+        print(f"\n---  ANA SAYFA ({kullanici_adi.upper()}) ---")
         print("1. Hayvanlarımı Listele & Öneri Al")
         print("2. Yeni Hayvan Ekle")
         print("3. Veteriner Listesi (Ali Hekim Bey)")
@@ -125,11 +120,32 @@ def ana_menu():
                 print("Hatalı giriş!")
         elif secim == '2':
             yeni_ad = input("Yeni Kullanıcı Adı: ").lower()
-            yeni_sifre = input("Parola: ")
-            kullanicilar[yeni_ad] = yeni_sifre
-            print("Kayıt başarılı!")
+            if yeni_ad in kullanicilar:
+                print("Bu kullanıcı adı zaten alınmış!")
+                continue
+
+            yeni_sifre = input("Yeni Parola: ")
+            buyuk_harf_var_mi = False
+            sayi_var_mi = False
+
+            for karakter in yeni_sifre:
+                if karakter.isupper(): buyuk_harf_var_mi = True
+                if karakter.isdigit(): sayi_var_mi = True
+
+            if len(yeni_sifre) >= 8 and buyuk_harf_var_mi and sayi_var_mi:
+                kullanicilar[yeni_ad] = yeni_sifre
+                print(" Kayıt başarılı!")
+            else:
+                print("\n Hata: Şifre kriterlere uygun değil!")
+                print("- En az 8 karakter olmalı")
+                print("- En az 1 büyük harf içermeli")
+                print("- En az 1 rakam içermeli")
+                
         elif secim == '3':
+            print("Çıkış yapılıyor...")
             break
 
 if __name__ == "__main__":
     ana_menu()
+
+
