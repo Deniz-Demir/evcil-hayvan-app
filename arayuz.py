@@ -7,7 +7,6 @@ kullanicilar = {
 }
 evcil_hayvanlar = [] 
 
-
 def verileri_senkronize_et():
     global evcil_hayvanlar
     try:
@@ -15,8 +14,11 @@ def verileri_senkronize_et():
         evcil_hayvanlar = [] 
         for h in gelen_veriler:
             evcil_hayvanlar.append({
-                "id": h[0], "isim": h[1], "yas": h[2], 
-                "kilo": h[3], "mama_turu": h[4]
+                "id": h[0], 
+                "isim": h[1], 
+                "yas": h[2], 
+                "kilo": h[3],
+                "mama_turu": h[4]
             })
     except Exception as e:
         print(f"Veri senkronizasyon hatası: {e}")
@@ -31,8 +33,10 @@ def hayvan_detay_sayfasi(hayvan_id):
         print(f"Boy: {detay[4]} cm | Kilo: {detay[3]} kg")
         print(f"Mama Saati: {detay[9]} | Miktarı: {detay[8]}")
         print("-" * 40)
+        
         rapor = hayvana_ozel_cozum(hayvan_id)
         print(rapor)
+        
         print("-" * 40)
         input("\nAna menüye dönmek için ENTER'a basın...")
 
@@ -66,49 +70,49 @@ def hayvan_kayit_formu():
         yas = int(input("Yaşı: "))
         kilo = float(input("Kilosu: "))
         boy = float(input("Boyu (cm): "))
+        cins = input("Cinsi: ")
         mama_tur = input("Mama Türü (Kuru/Yaş): ")
         miktar = input("Mama Miktarı (Gram): ")
         saat = input("Mama Saatleri: ")
         alerji = input("Alerji Durumu (Yoksa 'Yok'): ")
         
         hayvan_ekle(ad, yas, kilo, boy, "Belirtilmedi", "Marka", mama_tur, miktar, saat, alerji, "Yok", "Ali Hekim Bey", "Kuduz", "Normal")
+        
         print(f"\n[+] {ad} başarıyla sisteme eklendi!")
     except ValueError:
         print("Hata: Sayısal alanları kontrol edin!")
 
-
-def giris_kontrol():
-    """İkinci kodundaki mantığı terminal sistemine uyarlayan fonksiyon"""
-    kullanici = input("Kullanıcı Adı: ").lower().strip()
-    sifre = input("Parola: ").strip()
-
-    if kullanici == "" or sifre == "":
-        print("\n[!] Hata: Boş alan bırakılamaz")
-        return False
-        
-    if kullanici in kullanicilar and kullanicilar[kullanici] == sifre:
-        print(f"\n[+] Giriş başarılı! Hoş geldin {kullanici.upper()}")
-        ana_sayfa(kullanici) # Başarılıysa diğer sayfaya (ana sayfa) git
-        return True
-    else:
-        print("\n[!] Hatalı giriş: Kullanıcı adı veya şifre yanlış.")
-        return False
-
 def ana_sayfa(kullanici_adi):
     while True:
-        print(f"\n--- ANA SAYFA ({kullanici_adi.upper()}) ---")
+        print(f"\n---  ANA SAYFA ({kullanici_adi.upper()}) ---")
         print("1. Hayvanlarımı Listele & Öneri Al")
         print("2. Yeni Hayvan Ekle")
-        print("3. Veteriner Listesi")
+        print("3. Veteriner Listesi (Ali Hekim Bey)")
         print("4. Oturumu Kapat")
         
         secim = input("Seçiminiz: ")
         if secim == '1': hayvanlari_goruntule()
         elif secim == '2': hayvan_kayit_formu()
         elif secim == '3':
-            print("\n--- KAYITLI VETERİNERLER ---\n1. Ali Hekim Bey\n2. Veli Bey")
+            print("\n--- KAYITLI VETERİNERLER ---")
+            print("1. Ali Hekim Bey (Cerrahi Uzmanı)")
+            print("2. Veli Bey (Aşı Takip)")
             input("\nDevam etmek için ENTER...")
         elif secim == '4': break
+
+
+def giris_kontrol():
+    kullanici = input("Kullanıcı Adı: ")
+    sifre = input("Parola: ")
+
+    if kullanici == "" or sifre == "":
+        print("Boş alan bırakılamaz")
+        return
+
+    if kullanici in kullanicilar and kullanicilar[kullanici] == sifre:
+        ana_sayfa(kullanici)
+    else:
+        print("Hatalı giriş")
 
 def ana_menu():
     veritabani_kur()
@@ -122,24 +126,33 @@ def ana_menu():
         
         secim = input("Seçiminiz: ")
         if secim == '1':
-            giris_kontrol()
+            giris_kontrol() 
         elif secim == '2':
-            yeni_ad = input("Yeni Kullanıcı Adı: ").lower().strip()
+            yeni_ad = input("Yeni Kullanıcı Adı: ").lower()
             if yeni_ad in kullanicilar:
                 print("Bu kullanıcı adı zaten alınmış!")
                 continue
+
             yeni_sifre = input("Yeni Parola: ")
-            
-        
-            if len(yeni_sifre) >= 8 and any(c.isupper() for c in yeni_sifre) and any(c.isdigit() for c in yeni_sifre):
+            buyuk_harf_var_mi = False
+            sayi_var_mi = False
+
+            for karakter in yeni_sifre:
+                if karakter.isupper(): buyuk_harf_var_mi = True
+                if karakter.isdigit(): sayi_var_mi = True
+
+            if len(yeni_sifre) >= 8 and buyuk_harf_var_mi and sayi_var_mi:
                 kullanicilar[yeni_ad] = yeni_sifre
                 print(" Kayıt başarılı!")
             else:
-                print("\n Hata: Şifre en az 8 karakter, 1 büyük harf ve 1 rakam içermeli!")
+                print("\n Hata: Şifre kriterlere uygun değil!")
+                print("- En az 8 karakter olmalı")
+                print("- En az 1 büyük harf içermeli")
+                print("- En az 1 rakam içermeli")
+                
         elif secim == '3':
             print("Çıkış yapılıyor...")
             break
 
 if __name__ == "__main__":
     ana_menu()
-    
