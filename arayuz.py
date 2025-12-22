@@ -130,7 +130,7 @@ def ana_menu():
                 continue
             yeni_sifre = input("Yeni Parola: ")
             
-            # Şifre kriter analizi
+        
             if len(yeni_sifre) >= 8 and any(c.isupper() for c in yeni_sifre) and any(c.isdigit() for c in yeni_sifre):
                 kullanicilar[yeni_ad] = yeni_sifre
                 print(" Kayıt başarılı!")
