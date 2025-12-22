@@ -1,1 +1,1 @@
-print("Uygulama basliyor")
+
