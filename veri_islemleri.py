@@ -1,28 +1,34 @@
 import sqlite3
 
-# Veritabanı dosyamızın adı
+# Uygulamanın verileri saklayacağı  veritabanı dosyasının adı
 DOSYA = "evcil_hayvanlar.db"
 
 # ====================================================================
-# 1. MASAYI HAZIRLA (Kullanıcı Ayrımı ve Veteriner Düzenlemesi Eklendi)
+# BÖLÜM 1: VERİTABANI ALTYAPISININ HAZIRLANMASI
 # ====================================================================
 
 def veritabani_kur():
+    """
+    Sistemin çalışması için gerekli tabloları oluşturur ve başlangıç 
+    verilerini sisteme yükler.
+    """
+    # Veritabanı dosyasına bağlantı sağlanır
     baglanti = sqlite3.connect(DOSYA)
     yazici = baglanti.cursor()
 
-    # 1. MADDE İÇİN: sahip_id eklendi (Kullanıcılar sadece kendi hayvanını görsün diye)
+    # Hayvanlar Tablosu: Tüm fiziksel özellikleri ve sağlık geçmişini saklar.
+    # Kullanıcılar arası veri ayrımı 'sahip_id' alanı ile kontrol edilir.
     yazici.execute("""
         CREATE TABLE IF NOT EXISTS hayvanlar (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            sahip_id TEXT,                 -- Hayvanın hangi kullanıcıya ait olduğunu tutar
-            ad TEXT,
+            id INTEGER PRIMARY KEY AUTOINCREMENT, 
+            sahip_id TEXT,                         
+           ad TEXT,
             yas INTEGER,
             kilo REAL,
             boy REAL,
             cinsiyet TEXT,
             mama_markasi TEXT,
-            mama_turu TEXT,                -- Kuru/Yaş bilgisi burada tutuluyor
+            mama_turu TEXT,                         
             mama_miktari TEXT,
             mama_saati TEXT,
             alerjiler TEXT,
@@ -33,7 +39,7 @@ def veritabani_kur():
         )
     """)
 
-    # Veterinerler Tablosu
+    # Veterinerler Tablosu: Uygulama içinden ulaşılabilecek uzman bilgilerini tutar.
     yazici.execute("""
         CREATE TABLE IF NOT EXISTS veterinerler (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -43,7 +49,8 @@ def veritabani_kur():
         )
     """)
 
-    # 4. MADDE İÇİN: Ali Hekim Bey'in unvanı ve numarası düzenlendi
+    # Varsayılan Veri Girişi: Eğer uzman tablosu boşsa rehber bilgileri eklenir.
+    # Uzman unvanları ve telefon maskeleme standartlarına göre düzenlenmiştir.
     yazici.execute("SELECT COUNT(*) FROM veterinerler")
     if yazici.fetchone()[0] == 0:
         yazici.execute("""
@@ -57,18 +64,24 @@ def veritabani_kur():
             ("Veli Bey", "Uzman Veteriner", "05xx xxx xx xx")
         )
 
+    # Yapılan tüm işlemler veritabanına kalıcı olarak işlenir
     baglanti.commit()
+    # Veritabanı bağlantısı güvenli bir şekilde kapatılır
     baglanti.close()
 
 # ====================================================================
-# 2. YENİ HAYVAN EKLE (sahip_id Parametresi Eklendi)
+# BÖLÜM 2: VERİ EKLEME VE GÜNCELLEME İŞLEMLERİ (DML İşlemleri)
 # ====================================================================
 
-# Fonksiyona sahip_id eklendi, böylece kayıt yapan kişiyle eşleşir
 def hayvan_ekle(sahip_id, ad, yas, kilo, boy, cinsiyet, mama_marka, mama_tur, miktar, saat, alerji, urun, vet, asi, durum):
+    """
+    Arayüzden iletilen bilgileri veritabanı tablosuna yeni bir kayıt olarak ekler.
+    Güvenlik için doğrudan değer atamak yerine parametrik sorgu kullanılmıştır.
+    """
     baglanti = sqlite3.connect(DOSYA)
     yazici = baglanti.cursor()
 
+    # SQL Injection saldırılarını önlemek amacıyla (?) yer tutucuları tercih ettim.
     komut = """INSERT INTO hayvanlar 
                (sahip_id, ad, yas, kilo, boy, cinsiyet, mama_markasi, mama_turu, mama_miktari, mama_saati, alerjiler, sevilen_urunler, veteriner_gecmisi, asi_takvimi, durum_notu) 
                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"""
@@ -78,21 +91,24 @@ def hayvan_ekle(sahip_id, ad, yas, kilo, boy, cinsiyet, mama_marka, mama_tur, mi
     yazici.execute(komut, bilgiler)
     baglanti.commit()
     
-    # Son eklenen hayvanın ID'sini geri döndürüyoruz (Analiz ekranına geçiş için)
+    
     son_id = yazici.lastrowid
     baglanti.close()
     return son_id
 
 # ====================================================================
-# 3. VERİ ÇEKME (Kullanıcıya Özel Filtreleme)
+# BÖLÜM 3: VERİ SORGULAMA VE LİSTELEME MANTIĞI
 # ====================================================================
 
-# 1. MADDE İÇİN: Sadece giriş yapan kullanıcının ID'sine göre liste getirir
 def hayvanlari_goster(sahip_id):
+    """
+    Giriş yapan kullanıcının kimlik bilgisine göre sadece ona ait kayıtları seçer.
+    Bu sayede her kullanıcı sadece kendi evcil hayvan listesini görüntüleyebilir.
+    """
     baglanti = sqlite3.connect(DOSYA)
     yazici = baglanti.cursor()
     
-    # Filtreleme: WHERE sahip_id = ?
+    # WHERE filtresi ile veri tabanından seçici okuma yapılır.
     yazici.execute("SELECT id, ad, yas, kilo, mama_turu FROM hayvanlar WHERE sahip_id = ?", (sahip_id,))
     liste = yazici.fetchall()
     
@@ -100,6 +116,10 @@ def hayvanlari_goster(sahip_id):
     return liste
 
 def hayvan_detay_getir(hayvan_id):
+    """
+    Belirli bir hayvana ait tüm detaylı verileri ID üzerinden sorgular.
+    Sağlık raporu ve fiziksel analiz ekranı için gerekli veriyi sağlar.
+    """
     baglanti = sqlite3.connect(DOSYA)
     yazici = baglanti.cursor()
     yazici.execute("SELECT * FROM hayvanlar WHERE id = ?", (hayvan_id,))
@@ -108,6 +128,9 @@ def hayvan_detay_getir(hayvan_id):
     return detay
 
 def veterinerleri_listele():
+    """
+    Rehberde kayıtlı olan tüm uzman veteriner bilgilerini getirir.
+    """
     baglanti = sqlite3.connect(DOSYA)
     yazici = baglanti.cursor()
     yazici.execute("SELECT * FROM veterinerler")
