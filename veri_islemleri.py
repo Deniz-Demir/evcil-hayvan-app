@@ -4,26 +4,27 @@ import sqlite3
 DOSYA = "evcil_hayvanlar.db"
 
 # ====================================================================
-# 1. MASAYI HAZIRLA (Tablo Güncellendi)
+# 1. MASAYI HAZIRLA (Kullanıcı Ayrımı ve Veteriner Düzenlemesi Eklendi)
 # ====================================================================
 
 def veritabani_kur():
     baglanti = sqlite3.connect(DOSYA)
     yazici = baglanti.cursor()
 
-    # Hayvanlar tablosuna BOY, MAMA_SAATI ve MAMA_MIKTARI eklendi
+    # 1. MADDE İÇİN: sahip_id eklendi (Kullanıcılar sadece kendi hayvanını görsün diye)
     yazici.execute("""
         CREATE TABLE IF NOT EXISTS hayvanlar (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            sahip_id TEXT,                 -- Hayvanın hangi kullanıcıya ait olduğunu tutar
             ad TEXT,
             yas INTEGER,
             kilo REAL,
-            boy REAL,              -- Yeni eklendi
+            boy REAL,
             cinsiyet TEXT,
             mama_markasi TEXT,
-            mama_turu TEXT,        -- Yeni eklendi
-            mama_miktari TEXT,     -- Yeni eklendi
-            mama_saati TEXT,       -- Yeni eklendi
+            mama_turu TEXT,                -- Kuru/Yaş bilgisi burada tutuluyor
+            mama_miktari TEXT,
+            mama_saati TEXT,
             alerjiler TEXT,
             sevilen_urunler TEXT,
             veteriner_gecmisi TEXT,
@@ -32,7 +33,7 @@ def veritabani_kur():
         )
     """)
 
-    # Safiye'nin istediği Veterinerler Tablosu
+    # Veterinerler Tablosu
     yazici.execute("""
         CREATE TABLE IF NOT EXISTS veterinerler (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -42,49 +43,63 @@ def veritabani_kur():
         )
     """)
 
-    # İlk kurulumda Safiye'nin istediği doktorları otomatik ekle
+    # 4. MADDE İÇİN: Ali Hekim Bey'in unvanı ve numarası düzenlendi
     yazici.execute("SELECT COUNT(*) FROM veterinerler")
     if yazici.fetchone()[0] == 0:
-        yazici.execute("INSERT INTO veterinerler (vet_ad, uzmanlik) VALUES (?, ?)", ("Ali Hekim Bey", "Genel Cerrahi"))
-        yazici.execute("INSERT INTO veterinerler (vet_ad, uzmanlik) VALUES (?, ?)", ("Veli Bey", "Aşı Uzmanı"))
+        yazici.execute("""
+            INSERT INTO veterinerler (vet_ad, uzmanlik, telefon) 
+            VALUES (?, ?, ?)""", 
+            ("Ali Hekim Bey", "Uzman Veteriner", "05xx xxx xx xx")
+        )
+        yazici.execute("""
+            INSERT INTO veterinerler (vet_ad, uzmanlik, telefon) 
+            VALUES (?, ?, ?)""", 
+            ("Veli Bey", "Uzman Veteriner", "05xx xxx xx xx")
+        )
 
     baglanti.commit()
     baglanti.close()
 
 # ====================================================================
-# 2. YENİ HAYVAN EKLE (Parametreler Güncellendi)
+# 2. YENİ HAYVAN EKLE (sahip_id Parametresi Eklendi)
 # ====================================================================
 
-def hayvan_ekle(ad, yas, kilo, boy, cinsiyet, mama_marka, mama_tur, miktar, saat, alerji, urun, vet, asi, durum):
+# Fonksiyona sahip_id eklendi, böylece kayıt yapan kişiyle eşleşir
+def hayvan_ekle(sahip_id, ad, yas, kilo, boy, cinsiyet, mama_marka, mama_tur, miktar, saat, alerji, urun, vet, asi, durum):
     baglanti = sqlite3.connect(DOSYA)
     yazici = baglanti.cursor()
 
     komut = """INSERT INTO hayvanlar 
-               (ad, yas, kilo, boy, cinsiyet, mama_markasi, mama_turu, mama_miktari, mama_saati, alerjiler, sevilen_urunler, veteriner_gecmisi, asi_takvimi, durum_notu) 
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"""
+               (sahip_id, ad, yas, kilo, boy, cinsiyet, mama_markasi, mama_turu, mama_miktari, mama_saati, alerjiler, sevilen_urunler, veteriner_gecmisi, asi_takvimi, durum_notu) 
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"""
     
-    bilgiler = (ad, yas, kilo, boy, cinsiyet, mama_marka, mama_tur, miktar, saat, alerji, urun, vet, asi, durum)
+    bilgiler = (sahip_id, ad, yas, kilo, boy, cinsiyet, mama_marka, mama_tur, miktar, saat, alerji, urun, vet, asi, durum)
 
     yazici.execute(komut, bilgiler)
     baglanti.commit()
+    
+    # Son eklenen hayvanın ID'sini geri döndürüyoruz (Analiz ekranına geçiş için)
+    son_id = yazici.lastrowid
     baglanti.close()
-    return f"{ad} başarıyla kaydedildi!"
+    return son_id
 
 # ====================================================================
-# 3. VERİ ÇEKME (Nevada'nın Arayüzü İçin)
+# 3. VERİ ÇEKME (Kullanıcıya Özel Filtreleme)
 # ====================================================================
 
-def hayvanlari_goster():
+# 1. MADDE İÇİN: Sadece giriş yapan kullanıcının ID'sine göre liste getirir
+def hayvanlari_goster(sahip_id):
     baglanti = sqlite3.connect(DOSYA)
     yazici = baglanti.cursor()
-    # Arayüzde listelemek için önemli bilgileri çekiyoruz
-    yazici.execute("SELECT id, ad, yas, kilo, mama_turu FROM hayvanlar")
+    
+    # Filtreleme: WHERE sahip_id = ?
+    yazici.execute("SELECT id, ad, yas, kilo, mama_turu FROM hayvanlar WHERE sahip_id = ?", (sahip_id,))
     liste = yazici.fetchall()
+    
     baglanti.close()
     return liste
 
 def hayvan_detay_getir(hayvan_id):
-    """Seçilen hayvanın tüm özelliklerini Safiye'nin mantık motoruna gönderir."""
     baglanti = sqlite3.connect(DOSYA)
     yazici = baglanti.cursor()
     yazici.execute("SELECT * FROM hayvanlar WHERE id = ?", (hayvan_id,))
