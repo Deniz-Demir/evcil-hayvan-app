@@ -17,15 +17,11 @@ except ImportError:
 
 Window.size = (400, 800)
 
-# --------------------------
-# KULLANICI BAZLI VERİ
-# --------------------------
+# KULLANICI veri girişi
 kullanici_db = {"admin": "Admin123"} # Örnek şifre kriterine uygun güncellendi
 giris_yapan_kullanici = None
 
-# --------------------------
 # KIVY ARAYÜZÜ 
-# --------------------------
 arayuz_tasarimi = '''
 <SabitArkaplan@BoxLayout>:
     canvas.before:
@@ -301,9 +297,7 @@ ScreenManager:
             on_press: root.manager.current = 'liste_sayfasi'
 '''
 
-# --------------------------
-# SCREEN SINIFLARI (MANTIK)
-# --------------------------
+# SCREEN SINIFLARI
 class GirisEkrani(Screen): pass
 
 class KayitOlEkrani(Screen):
