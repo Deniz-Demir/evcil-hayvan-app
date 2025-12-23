@@ -24,7 +24,7 @@ kullanici_db = {"admin": "Admin123"} # Örnek şifre kriterine uygun güncellend
 giris_yapan_kullanici = None
 
 # --------------------------
-# KIVY ARAYÜZÜ (KV TASARIMI)
+# KIVY ARAYÜZÜ 
 # --------------------------
 arayuz_tasarimi = '''
 <SabitArkaplan@BoxLayout>:
@@ -378,7 +378,7 @@ class HayvanEkleEkrani(Screen):
             return
 
         try:
-            # DÜZELTİLEN KISIM: Tam olarak 15 parametre gönderiliyor
+        
             yeni_id = hayvan_ekle(
                 giris_yapan_kullanici,           # 1 (sahip_id)
                 self.ids.h_ad.text,              # 2 (ad)
