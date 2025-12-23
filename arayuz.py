@@ -2,17 +2,16 @@ from veri_islemleri import veritabani_kur, hayvan_ekle, hayvanlari_goster, hayva
 from safiye import hayvana_ozel_cozum
 
 kullanicilar = {
-    "admin": "Admin123", # Şifre şartına uygun örnek
+    "admin": "Admin123", 
     "deneme": "Sifre123"
 }
 
 evcil_hayvanlar = [] 
-aktif_kullanici = None # 1. MADDE: Giriş yapan kullanıcıyı takip eder
+aktif_kullanici = None 
 
 def verileri_senkronize_et():
     global evcil_hayvanlar
     try:
-        # 1. MADDE: Sadece aktif kullanıcıya ait hayvanları veritabanından çeker
         gelen_veriler = hayvanlari_goster(aktif_kullanici) 
         evcil_hayvanlar = [] 
         for h in gelen_veriler:
@@ -37,7 +36,6 @@ def hayvan_detay_sayfasi(hayvan_id):
         print(f"Mama Saati: {detay[9]} | Miktarı: {detay[8]}")
         print("-" * 40)
         
-        # Analiz raporu Safiye dalından geliyor
         rapor = hayvana_ozel_cozum(hayvan_id)
         print(rapor)
         
@@ -76,7 +74,6 @@ def hayvan_kayit_formu():
         boy = float(input("Boyu (cm): "))
         cins = input("Cinsi: ")
         
-        # 3. MADDE: MAMA TÜRÜ SORGUSU (Giriş kısmında kuru mu yaş mı)
         print("Mama Türü Seçin:")
         print("1. Kuru Mama")
         print("2. Yaş Mama")
@@ -87,7 +84,6 @@ def hayvan_kayit_formu():
         saat = input("Mama Saatleri: ")
         alerji = input("Alerji Durumu (Yoksa 'Yok'): ")
         
-        # 1. MADDE: Veritabanına kayıt ederken aktif_kullanici bilgisini de gönderiyoruz
         hayvan_ekle(aktif_kullanici, ad, yas, kilo, boy, "Belirtilmedi", "Marka", mama_tur, miktar, saat, alerji, "Yok", "Ali Hekim Bey", "Kuduz", "Normal")
         
         print(f"\n[+] {ad} başarıyla sadece sizin listenize eklendi!")
@@ -101,17 +97,16 @@ def ana_sayfa(kullanici_adi):
         print(f"\n---   ANA SAYFA ({kullanici_adi.upper()}) ---")
         print("1. Hayvanlarımı Listele & Öneri Al")
         print("2. Yeni Hayvan Ekle")
-        print("3. Uzman Veteriner Bilgisi") # 4. MADDE: İsim güncellendi
+        print("3. Uzman Veteriner Bilgisi") 
         print("4. Oturumu Kapat")
         
         secim = input("Seçiminiz: ")
         if secim == '1': hayvanlari_goruntule()
         elif secim == '2': hayvan_kayit_formu()
         elif secim == '3':
-            # 4. MADDE: Veteriner unvanı ve telefon gizleme (x'leme)
             print("\n--- KAYITLI UZMAN VETERİNERLER ---")
-            print("1. Ali Hekim Bey (Uzman Veteriner)") # Unvan değişti
-            print("   Telefon: 05xx xxx xx xx")       # Numara x'lendi
+            print("1. Ali Hekim Bey (Uzman Veteriner)")
+            print("   Telefon: 05xx xxx xx xx")      
             print("2. Veli Bey (Uzman Veteriner)")
             print("   Telefon: 05xx xxx xx xx")
             input("\nDevam etmek için ENTER...")
@@ -143,7 +138,6 @@ def ana_menu():
 
             yeni_sifre = input("Yeni Parola: ")
             
-            # 2. MADDE: ŞİFRE ŞARTLARI (Büyük harf ve sayı kontrolü)
             buyuk_harf_var_mi = any(karakter.isupper() for karakter in yeni_sifre)
             sayi_var_mi = any(karakter.isdigit() for karakter in yeni_sifre)
 
