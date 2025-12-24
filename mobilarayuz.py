@@ -17,11 +17,10 @@ except ImportError:
 
 Window.size = (400, 800)
 
-# KULLANICI veri girişi
-kullanici_db = {"admin": "Admin123"} # Örnek şifre kriterine uygun güncellendi
+kullanici_db = {"admin": "Admin123"} 
 giris_yapan_kullanici = None
 
-# KIVY ARAYÜZÜ 
+# KV 
 arayuz_tasarimi = '''
 <SabitArkaplan@BoxLayout>:
     canvas.before:
@@ -138,7 +137,7 @@ ScreenManager:
         padding: 15
         spacing: 10
         Label:
-            text: 'HAYVANLARIM'
+            text: '📋 HAYVANLARIM'
             bold: True
             size_hint_y: None
             height: 50
@@ -178,6 +177,8 @@ ScreenManager:
                 Label:
                     text: 'HAYVAN BİLGİ GİRİŞİ'
                     bold: True
+                    size_hint_y: None
+                    height: 40
                 TextInput:
                     id: h_ad
                     hint_text: 'Hayvan Adı'
@@ -199,16 +200,19 @@ ScreenManager:
                     size_hint_y: None
                     height: 40
                 TextInput:
+                    id: h_cins
+                    hint_text: 'Hayvanın Cinsi'
+                    size_hint_y: None
+                    height: 40
+                TextInput:
                     id: h_mama
                     hint_text: 'Mama Markası'
                     size_hint_y: None
                     height: 40
-                # 3. MADDE: MAMA TÜRÜ SORGUSU (SPINNER)
                 Label:
                     text: 'Mama Türünü Seçin:'
                     size_hint_y: None
                     height: 30
-                    halign: 'left'
                 Spinner:
                     id: h_mama_turu
                     text: 'Seçiniz (Kuru/Yaş)'
@@ -227,11 +231,11 @@ ScreenManager:
                     height: 40
                 TextInput:
                     id: h_asi
-                    hint_text: 'Aşı Bilgisi'
+                    hint_text: 'Aşı Bilgisi (Örn: Kuduz-Yapıldı)'
                     size_hint_y: None
                     height: 40
                 Button:
-                    text: 'VERİLERİ KAYDET'
+                    text: 'VERİLERİ KAYDET VE ANALİZ ET'
                     size_hint_y: None
                     height: 55
                     background_color: 0.2, 0.7, 0.3, 1
@@ -251,22 +255,24 @@ ScreenManager:
         orientation: 'vertical'
         padding: 20
         Label:
-            text: 'ANALİZ RAPORU'
+            text: ' SAĞLIK RAPORU'
             bold: True
             size_hint_y: None
             height: 50
         ScrollView:
             Label:
                 id: rapor_alani
-                text: ''
+                text: 'Analiz yükleniyor...'
                 markup: True
                 text_size: self.width - 20, None
                 size_hint_y: None
                 height: self.texture_size[1]
+                color: 1, 1, 1, 1
         Button:
-            text: '← GERİ DÖN'
+            text: '← LİSTEYE GERİ DÖN'
             size_hint_y: None
             height: 55
+            background_normal: ''
             on_press: root.manager.current = 'liste_sayfasi'
 
 <VetDestekEkrani>:
@@ -276,17 +282,15 @@ ScreenManager:
         padding: 30
         spacing: 20
         Label:
-            text: 'VETERİNER BİLGİSİ'
+            text: ' UZMAN VETERİNER'
             bold: True
-            font_size: 24
-        # 4. MADDE: ÜNVAN DÜZELTME VE NUMARA GİZLEME
         Label:
-            text: '[b]Ali Hekim Bey[/b]\\nUzman Veteriner\\nTel: 05xx xxx xx xx'
+            text: 'Ali Hekim Bey\\nUzman Veteriner Hekim\\nTel: 05xx xxx xx xx'
             halign: 'center'
             font_size: 20
             markup: True
         Button:
-            text: ' YAKINDAKİ VETERİNERLER'
+            text: ' YAKINDAKİ VETERİNERLER (MAPS)'
             size_hint_y: None
             height: 65
             on_press: root.harita_ac()
@@ -297,33 +301,19 @@ ScreenManager:
             on_press: root.manager.current = 'liste_sayfasi'
 '''
 
-# SCREEN SINIFLARI
 class GirisEkrani(Screen): pass
 
 class KayitOlEkrani(Screen):
     def uye_kaydet(self):
-        ad = self.ids.yeni_ad.text.strip()
-        sifre = self.ids.yeni_sifre.text.strip()
-        
-        # 2. MADDE: ŞİFRE ŞARTLARI
-        buyuk_harf = any(c.isupper() for c in sifre)
-        rakam = any(c.isdigit() for c in sifre)
-        
-        if len(sifre) < 8 or not buyuk_harf or not rakam:
-            self.popup("Hata", "Şifre kriterlere uygun değil!\n- En az 8 karakter\n- En az 1 büyük harf\n- En az 1 rakam")
+        ad, sifre = self.ids.yeni_ad.text.strip(), self.ids.yeni_sifre.text.strip()
+        if len(sifre) < 8 or not any(c.isupper() for c in sifre) or not any(c.isdigit() for c in sifre):
+            self.pencere("Hata", "Şifre kriterlere uygun değil!")
             return
-
-        if ad in kullanici_db:
-            self.popup("Hata", "Bu kullanıcı adı zaten kayıtlı!")
-            return
-
         kullanici_db[ad] = sifre
         self.manager.current = 'oturum_ac'
-        self.popup("Başarılı", "Kayıt tamamlandı! Giriş yapabilirsiniz.")
 
-    def popup(self, baslik, mesaj):
-        pop = Popup(title=baslik, content=Label(text=mesaj), size_hint=(0.8, 0.4))
-        pop.open()
+    def pencere(self, baslik, mesaj):
+        Popup(title=baslik, content=Label(text=mesaj), size_hint=(0.8, 0.4)).open()
 
 class OturumAcEkrani(Screen):
     def giris_yap(self):
@@ -332,71 +322,53 @@ class OturumAcEkrani(Screen):
         if ad in kullanici_db and kullanici_db[ad] == sifre:
             giris_yapan_kullanici = ad 
             self.manager.current = 'liste_sayfasi'
-        else:
-            self.popup("Hata", "Hatalı kullanıcı adı veya şifre!")
-
-    def popup(self, baslik, mesaj):
-        pop = Popup(title=baslik, content=Label(text=mesaj), size_hint=(0.8, 0.3))
-        pop.open()
 
 class ListeEkrani(Screen):
     def on_enter(self):
         self.ids.hayvan_listesi.clear_widgets()
-        # 1. MADDE: Sadece giriş yapanın hayvanları
         veriler = hayvanlari_goster(giris_yapan_kullanici)
-        
-        if not veriler:
-            self.ids.hayvan_listesi.add_widget(Label(text="Henüz hayvan eklemediniz.", size_hint_y=None, height=40))
-            return
-
         for h in veriler:
             btn = Button(
                 text=f"🐾 {h[1].upper()} ({h[4]})",
                 size_hint_y=None, height=85,
                 background_color=(0.3, 0.3, 0.5, 1),
-                background_normal='', bold=True
+                background_normal='', color=(1, 1, 1, 1), bold=True
             )
-            btn.bind(on_press=lambda x, h_id=h[0]: self.rapor_yukle(h_id))
+            btn.bind(on_press=lambda x, h_id=h[0]: self.raporu_getir(h_id))
             self.ids.hayvan_listesi.add_widget(btn)
 
-    def rapor_yukle(self, h_id):
+    def raporu_getir(self, h_id):
         sonuc = hayvana_ozel_cozum(h_id)
         self.manager.get_screen('rapor_sayfasi').ids.rapor_alani.text = sonuc
         self.manager.current = 'rapor_sayfasi'
 
 class HayvanEkleEkrani(Screen):
     def kaydet_ve_analiz(self):
-        mama_turu = self.ids.h_mama_turu.text
-        if mama_turu == 'Seçiniz (Kuru/Yaş)':
-            self.popup("Hata", "Lütfen mama türünü seçin!")
-            return
-
         try:
-        
+            # Aşı bilgisini (h_asi) doğrudan veritabanına ve analiz motoruna gönderiyoruz
             yeni_id = hayvan_ekle(
-                giris_yapan_kullanici,           # 1 (sahip_id)
-                self.ids.h_ad.text,              # 2 (ad)
-                int(self.ids.h_yas.text or 0),   # 3 (yas)
-                float(self.ids.h_kilo.text or 0),# 4 (kilo)
-                float(self.ids.h_boy.text or 0), # 5 (boy)
-                "Bilinmiyor",                    # 6 (cinsiyet)
-                self.ids.h_mama.text,            # 7 (mama_marka)
-                mama_turu,                       # 8 (mama_tur)
-                self.ids.h_gram.text,            # 9 (miktar)
-                "08:00",                         # 10 (saat)
-                self.ids.h_alerji.text,          # 11 (alerji)
-                "Yok",                           # 12 (urun)
-                "Ali Hekim",                     # 13 (vet)
-                self.ids.h_asi.text,             # 14 (asi)
-                "Normal"                         # 15 (durum)
+                giris_yapan_kullanici,
+                self.ids.h_ad.text,
+                int(self.ids.h_yas.text or 0),
+                float(self.ids.h_kilo.text or 0),
+                float(self.ids.h_boy.text or 0),
+                self.ids.h_cins.text,
+                self.ids.h_mama.text,
+                self.ids.h_mama_turu.text,
+                self.ids.h_gram.text,
+                "08:00",
+                self.ids.h_alerji.text,
+                "Yok",
+                "Ali Hekim",
+                self.ids.h_asi.text, # AŞI VERİSİ BURADA AKTARILIYOR
+                "Normal"
             )
-            self.manager.current = 'liste_sayfasi'
+            # Rapor sayfasına veriyi yükle ve geçiş yap
+            rapor = hayvana_ozel_cozum(yeni_id)
+            self.manager.get_screen('rapor_sayfasi').ids.rapor_alani.text = rapor
+            self.manager.current = 'rapor_sayfasi'
         except Exception as e:
-            self.popup("Hata", f"Veri hatası: {str(e)}")
-
-    def popup(self, baslik, mesaj):
-        pop = Popup(title=baslik, content=Label(text=mesaj), size_hint=(0.8, 0.3))
-        pop.open()
+            print(f"Hata: {e}")
 
 class RaporEkrani(Screen): pass
 
