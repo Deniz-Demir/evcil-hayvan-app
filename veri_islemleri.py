@@ -1,11 +1,11 @@
 import sqlite3
 
-# Uygulamanın verileri saklayacağı  veritabanı dosyasının adı
+
 DOSYA = "evcil_hayvanlar.db"
 
-# ====================================================================
-# BÖLÜM 1: VERİTABANI ALTYAPISININ HAZIRLANMASI
-# ====================================================================
+
+# VERİTABANI ALTYAPISININ HAZIRLANMASI
+
 
 def veritabani_kur():
     """
@@ -69,9 +69,9 @@ def veritabani_kur():
     # Veritabanı bağlantısı güvenli bir şekilde kapatılır
     baglanti.close()
 
-# ====================================================================
-# BÖLÜM 2: VERİ EKLEME VE GÜNCELLEME İŞLEMLERİ (DML İşlemleri)
-# ====================================================================
+
+#  VERİ EKLEME VE GÜNCELLEME İŞLEMLERİ (DML İşlemleri)
+
 
 def hayvan_ekle(sahip_id, ad, yas, kilo, boy, cinsiyet, mama_marka, mama_tur, miktar, saat, alerji, urun, vet, asi, durum):
     """
@@ -96,9 +96,9 @@ def hayvan_ekle(sahip_id, ad, yas, kilo, boy, cinsiyet, mama_marka, mama_tur, mi
     baglanti.close()
     return son_id
 
-# ====================================================================
-# BÖLÜM 3: VERİ SORGULAMA VE LİSTELEME MANTIĞI
-# ====================================================================
+
+# VERİ SORGULAMA VE LİSTELEME MANTIĞI
+
 
 def hayvanlari_goster(sahip_id):
     """
