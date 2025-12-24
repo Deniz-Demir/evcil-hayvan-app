@@ -37,7 +37,7 @@ def hayvana_ozel_cozum(hayvan_id): #Veritabanından bilgileri alır ve akıllı 
 
     #  Uzman Veteriner Tavsiyesi 
     cozum += "\n" + "-"*35 + "\n"
-    cozum += "👨‍⚕️TAVSİYE EDİLEN UZMAN:\n"
+    cozum += "TAVSİYE EDİLEN UZMAN:\n"
     cozum += "Ali Hekim Bey - Uzman Veteriner\n"
     cozum += " İletişim: 05xx xxx xx xx\n"
     return cozum
@@ -51,7 +51,7 @@ def pencereyi_ac():
     pencere.geometry("500x650")
     pencere.configure(bg="#f0f0f0")
     # Başlık
-    tk.Label(pencere, text="🐾 SAFİYE KARAR DESTEK", font=("Arial", 16, "bold"), bg="#f0f0f0", fg="#2c3e50").pack(pady=15)
+    tk.Label(pencere, text=" SAFİYE KARAR DESTEK", font=("Arial", 16, "bold"), bg="#f0f0f0", fg="#2c3e50").pack(pady=15)
     # Analiz Sonuç Alanı
     tk.Label(pencere, text="Hayvan Analizi ve Uzman Görüşü:", bg="#f0f0f0").pack()
     cozum_alani = tk.Text(pencere, height=12, width=55, font=("Courier", 10), padx=10, pady=10)
