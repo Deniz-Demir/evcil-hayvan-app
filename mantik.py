@@ -1,6 +1,5 @@
 from veri_islemleri import hayvan_detay_getir
 
-# 1. AKILLI ANALİZ VE MAMA MOTORU
 def hayvana_ozel_cozum(hayvan_id): #Veritabanından bilgileri alır ve akıllı algoritma ile analiz eder.
     detay = hayvan_detay_getir(hayvan_id)
     if not detay:
